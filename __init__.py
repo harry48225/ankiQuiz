@@ -17,16 +17,44 @@ from aqt.qt import *
 #     showInfo("Card count: %d" % cardCount)
 
 def getReviews():
-    
+    '''Gets all of the cards in the current deck that have been seen before. '''
     ids = mw.col.findCards("is:review deck:current")
 
     card = mw.col.getCard(ids[0])
-    showInfo(card.q() + " " + card.a())
+    return ids
+
+
+def quiz():
+    '''Runs a multiple choice quiz'''
+
+    cards = getReviews()
+    
+    mw.myWidget = widget = QuizQuestion(cards[0])
+    widget.show()
+    
+
+class QuizQuestion(QWidget):
+
+    def __init__(self, cardid):
+        super(QuizQuestion, self).__init__()
+
+        self.cardid = cardid
+        self.card = mw.col.getCard(cardid)
+
+        self.doLayout()
+
+    def doLayout(self):
+        
+        layout = QVBoxLayout()
+        note = self.card.note()
+        layout.addWidget(QLabel(note['Front']))
+        layout.addWidget(QLabel(note['Back']))
+        self.setLayout(layout)
 
 # create a new menu item, "test"
-action = QAction("test", mw)
+action = QAction("doQuiz", mw)
 # set it to call testFunction when it's clicked
-action.triggered.connect(getReviews)
+action.triggered.connect(quiz)
 # and add it to the tools menu
 mw.form.menuTools.addAction(action)
 

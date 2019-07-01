@@ -5,7 +5,7 @@ from aqt.utils import showInfo
 # import all of the Qt GUI library
 from aqt.qt import *
 
-from random import shuffle
+from random import shuffle,randrange
 
 # We're going to add a menu item below. First we want to create a function to
 # be called when the menu item is activated.
@@ -31,10 +31,9 @@ def quiz():
 
     cards = getReviews()
     
-    mw.myWidget = widget = QuizQuestion(cards[0], cards[1:4])
+    mw.myWidget = widget = Quiz(6, cards)
     widget.show()
     
-
 class QuizQuestion(QWidget):
 
     def __init__(self, cardid, othercards):
@@ -69,8 +68,6 @@ class QuizQuestion(QWidget):
 
         for note in allnotes:
             answers.addWidget(QRadioButton(note['Back']))
-        #answers.addWidget(QLabel(note['Back']))
-
 
         answerssection.setLayout(answers)
 
@@ -78,6 +75,51 @@ class QuizQuestion(QWidget):
         layout.addWidget(answerssection)
         
         self.setLayout(layout)
+
+
+
+class Quiz(QWidget):
+    NUMBER_OF_ANSWERS = 4
+
+    def __init__(self, noOfQuestions, cards):
+        super(Quiz, self).__init__()
+        self.questions = self.makeQuestions(noOfQuestions, cards)
+        self.doLayout()
+
+    def doLayout(self):
+        layout = QVBoxLayout() # Vertical box layout
+        
+        for question in self.questions:
+            layout.addWidget(question)
+
+        self.setLayout(layout)
+
+    def makeQuestions(self, noOfQuestions, cards):
+        '''Gathers questions for a quiz'''
+        questions = []
+        cardidsused = [-1] # Keep track of the cards that we've already used so that we don't repeat them
+        
+        for _ in range(noOfQuestions):
+            
+            cardid = -1
+            while cardid in cardidsused:
+                cardid = randrange(0,len(cards))
+
+            # We should now have a unqiue cardid
+            questioncards = cards[cardid:cardid+Quiz.NUMBER_OF_ANSWERS]
+
+            cardidsused.extend(range(cardid, cardid+Quiz.NUMBER_OF_ANSWERS)) # Add all the ids used to the list
+
+            newQuestion = QuizQuestion(questioncards.pop(0), questioncards)
+
+            questions.append(newQuestion)
+
+        return questions
+
+
+            
+
+
 # create a new menu item, "test"
 action = QAction("doQuiz", mw)
 # set it to call testFunction when it's clicked
